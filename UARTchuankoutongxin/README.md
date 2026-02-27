@@ -77,6 +77,6 @@ void UART_Routine() interrupt 4
 - 这里个中断时个时间触发型中断，TI和RI位置1会触发分被表示发送和接受，这里先判断是否为接收在做出对应的处理然后再手动将RI置0：大体效果就是电脑端向单片机发送数据然后单片机再发送相同数据给电脑
 - 我们看最终效果
 - <img width="799" height="570" alt="屏幕截图 2026-02-26 121224" src="https://github.com/user-attachments/assets/23976dd4-8c02-42e3-8946-68d3f6865f6b" />
-- <img width="791" height="568" alt="屏幕截图 2026-02-26 121417" src="https://github.com/user-attachments/assets/096bcea8-69c2-4260-8aa9-7f3ead108c0b"
+- <img width="791" height="568" alt="屏幕截图 2026-02-26 121417" src="https://github.com/user-attachments/assets/096bcea8-69c2-4260-8aa9-7f3ead108c0b" />
 - ![微信图片_20260226121716_64_2](https://github.com/user-attachments/assets/3c80aac2-dd1e-4932-81df-f4ea90214f66)
 
