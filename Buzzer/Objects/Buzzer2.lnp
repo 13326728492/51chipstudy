@@ -1,0 +1,7 @@
+".\Objects\STARTUP.obj",
+".\Objects\Timer0.obj",
+".\Objects\Delay.obj",
+".\Objects\main.obj",
+".\Objects\1602.obj" 
+TO ".\Objects\Buzzer2" 
+PRINT(".\Listings\Buzzer2.m51") RAMSIZE(256) 

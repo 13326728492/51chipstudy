@@ -1,0 +1,222 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        02/11/2026  22:31:12  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+D:\KEIL\C51\BIN\BL51.EXE .\Objects\STARTUP.obj, .\Objects\Timer0.obj, .\Objects\Delay.obj, .\Objects\main.obj TO .\Objec
+>> ts\Buzzer PRINT (.\Listings\Buzzer.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\STARTUP.obj (?C_STARTUP)
+  .\Objects\Timer0.obj (TIMER0)
+  .\Objects\Delay.obj (DELAY)
+  .\Objects\main.obj (MAIN)
+  D:\KEIL\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  .\Objects\Buzzer (?C_STARTUP)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     004CH     UNIT         ?DT?MAIN
+            IDATA   0054H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     0008H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+            CODE    000EH     00F1H     UNIT         ?CO?MAIN
+            CODE    00FFH     008CH     UNIT         ?C_C51STARTUP
+            CODE    018BH     004EH     UNIT         ?C_INITSEG
+            CODE    01D9H     0034H     UNIT         ?PR?TIMER0_ROUTINE?MAIN
+            CODE    020DH     0031H     UNIT         ?PR?MAIN?MAIN
+            CODE    023EH     0017H     UNIT         ?PR?TIMER0INIT?TIMER0
+            CODE    0255H     0015H     UNIT         ?PR?_DELAY?DELAY
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\Buzzer (?C_STARTUP)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN
+  +--> ?PR?TIMER0INIT?TIMER0
+  +--> ?CO?MAIN
+  +--> ?PR?_DELAY?DELAY
+
+
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      02/11/2026  22:31:12  PAGE 2
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\Buzzer (?C_STARTUP)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ?C_STARTUP
+  C:00FFH         SEGMENT       ?C_C51STARTUP
+  I:0054H         SEGMENT       ?STACK
+  C:0000H         PUBLIC        ?C_STARTUP
+  D:00E0H         SYMBOL        ACC
+  D:00F0H         SYMBOL        B
+  D:0083H         SYMBOL        DPH
+  D:0082H         SYMBOL        DPL
+  N:0000H         SYMBOL        IBPSTACK
+  N:0100H         SYMBOL        IBPSTACKTOP
+  N:0080H         SYMBOL        IDATALEN
+  C:0102H         SYMBOL        IDATALOOP
+  N:0000H         SYMBOL        PBPSTACK
+  N:0100H         SYMBOL        PBPSTACKTOP
+  N:0000H         SYMBOL        PDATALEN
+  N:0000H         SYMBOL        PDATASTART
+  N:0000H         SYMBOL        PPAGE
+  N:0000H         SYMBOL        PPAGEENABLE
+  D:00A0H         SYMBOL        PPAGE_SFR
+  D:0081H         SYMBOL        SP
+  C:00FFH         SYMBOL        STARTUP1
+  N:0000H         SYMBOL        XBPSTACK
+  N:0000H         SYMBOL        XBPSTACKTOP
+  N:0000H         SYMBOL        XDATALEN
+  N:0000H         SYMBOL        XDATASTART
+  C:0000H         LINE#         126
+  C:00FFH         LINE#         133
+  C:0101H         LINE#         134
+  C:0102H         LINE#         135
+  C:0103H         LINE#         136
+  C:0105H         LINE#         185
+  C:0108H         LINE#         196
+  -------         ENDMOD        ?C_STARTUP
+
+  -------         MODULE        TIMER0
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  B:00A8H.1       PUBLIC        ET0
+  B:0088H.5       PUBLIC        TF0
+  C:023EH         PUBLIC        Timer0Init
+  D:008CH         PUBLIC        TH0
+  D:008AH         PUBLIC        TL0
+  B:00B8H.1       PUBLIC        PT0
+  B:0088H.4       PUBLIC        TR0
+  D:00C8H         PUBLIC        T2CON
+BL51 BANKED LINKER/LOCATER V6.22                                                      02/11/2026  22:31:12  PAGE 3
+
+
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          TIMER0INIT
+  C:023EH         LINE#         4
+  C:023EH         LINE#         5
+  C:023EH         LINE#         6
+  C:0241H         LINE#         7
+  C:0244H         LINE#         8
+  C:0247H         LINE#         9
+  C:024AH         LINE#         10
+  C:024CH         LINE#         11
+  C:024EH         LINE#         12
+  C:0250H         LINE#         13
+  C:0252H         LINE#         14
+  C:0254H         LINE#         15
+  -------         ENDPROC       TIMER0INIT
+  -------         ENDMOD        TIMER0
+
+  -------         MODULE        DELAY
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:0255H         PUBLIC        _Delay
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        xms
+  -------         DO            
+  D:0005H         SYMBOL        i
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:0255H         LINE#         3
+  C:0255H         LINE#         4
+  C:0255H         LINE#         6
+  C:025FH         LINE#         7
+  C:025FH         LINE#         8
+  C:0261H         LINE#         9
+  C:0263H         LINE#         11
+  C:0263H         LINE#         12
+  C:0265H         LINE#         13
+  C:0267H         LINE#         14
+  C:0269H         LINE#         15
+  -------         ENDPROC       _DELAY
+  -------         ENDMOD        DELAY
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:01D9H         PUBLIC        Timer0_Routine
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  C:000EH         PUBLIC        Music
+  B:00A0H.5       PUBLIC        Buzzer
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  C:020DH         PUBLIC        main
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:008CH         PUBLIC        TH0
+  D:008AH         PUBLIC        TL0
+  B:0088H.4       PUBLIC        TR0
+  D:00C8H         PUBLIC        T2CON
+BL51 BANKED LINKER/LOCATER V6.22                                                      02/11/2026  22:31:12  PAGE 4
+
+
+  D:0008H         PUBLIC        MusicSelect
+  D:0009H         PUBLIC        FreqSelect
+  D:00D0H         PUBLIC        PSW
+  D:000AH         PUBLIC        FreqTable
+  -------         PROC          MAIN
+  C:020DH         LINE#         225
+  C:020DH         LINE#         226
+  C:020DH         LINE#         227
+  C:0210H         LINE#         228
+  C:0210H         LINE#         229
+  C:0210H         LINE#         230
+  C:021AH         LINE#         231
+  C:021AH         LINE#         232
+  C:021CH         LINE#         233
+  C:021EH         LINE#         234
+  C:022BH         LINE#         235
+  C:022DH         LINE#         236
+  C:022FH         LINE#         237
+  C:0236H         LINE#         238
+  C:0238H         LINE#         239
+  C:023AH         LINE#         241
+  C:023AH         LINE#         242
+  C:023CH         LINE#         243
+  -------         ENDPROC       MAIN
+  -------         PROC          TIMER0_ROUTINE
+  C:01D9H         LINE#         248
+  C:01E4H         LINE#         250
+  C:01F2H         LINE#         251
+  C:01F2H         LINE#         252
+  C:01FFH         LINE#         253
+  C:0202H         LINE#         254
+  C:0204H         LINE#         255
+  C:0204H         LINE#         257
+  -------         ENDPROC       TIMER0_ROUTINE
+  -------         ENDMOD        MAIN
+
+Program Size: data=85.0 xdata=0 code=610
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
