@@ -15,6 +15,14 @@
 ![微信图片_20260225112339_60_2](https://github.com/user-attachments/assets/0e380122-d569-4937-a5a3-c1c6452bfab8)<br>
 当GATE=0，TR0=1时TL0就在机器周期的作用下开始计数，当TL0计满后向TH0进位直到TH0也计满后将TF0置1，然后向CPU申请中断，定时器需要设置一个初值（也就是设置TH0和TL0的值）每次计数就在这个初值基础上进行+1操作
 
+- 在开始介绍代码之前，我们先讲一下定时器相关的寄存器与功能
+- <img width="1332" height="1116" alt="image" src="https://github.com/user-attachments/assets/4347cbbd-3e4b-4ece-8988-b53eaef49ccb" />
+
+- 有关呢TMOD寄存器的设置，我截取了CSDN上的相应笔记
+- <img width="1890" height="1164" alt="image" src="https://github.com/user-attachments/assets/e41dab3c-7a0b-4c1d-8733-9bc5a43123ad" />
+
+
+
 - 接下来介绍一下这一部分的代码
 ```c
 void Timer0_Init(void)
@@ -37,6 +45,12 @@ void Timer0_Init(void)
 第四清楚溢出位TF0 将其清0<br>
 最后启动定时器并开启相应的全局中断和外设中断即分别使TR0 ET0 EA置1<br>
 最后最后设置该中断的优先级PT0=0 默认低优先级
+
+- 这里使用到了中断相关的寄存器，现在来介绍一下
+- <img width="1344" height="1214" alt="image" src="https://github.com/user-attachments/assets/ddb0d5ec-688b-4bf6-b462-b4e6be129b70" />
+<img width="1420" height="726" alt="image" src="https://github.com/user-attachments/assets/58d1bd37-9e53-45a3-85b8-d53072801d8d" />
+这里我直接截取了相关芯片手册上的说明，上面已经讲解的挺详细的
+
 
 ```c
 void Timer0_Routine() interrupt 1
