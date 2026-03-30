@@ -1,0 +1,89 @@
+C51 COMPILER V9.54   INTERRUPT                                                             03/30/2026 21:56:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE INTERRUPT
+OBJECT MODULE PLACED IN .\Objects\interrupt.obj
+COMPILER INVOKED BY: E:\keil5\C51\BIN\C51.EXE interrupt.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Li
+                    -stings\interrupt.lst) TABS(2) OBJECT(.\Objects\interrupt.obj)
+
+line level    source
+
+   1          #include "interrupt.h"
+   2          #include "ioPort.h"
+   3          
+   4          //?????????
+   5          void IInterruptEnable()
+   6          {
+   7   1          IE = 0x82;    //EA?,?????
+   8   1          TR0 = 1;      //?????0
+   9   1      }
+  10          
+  11          //???????
+  12          static void interruptTimerInit()
+  13          {
+  14   1          TMOD=0x01;
+  15   1          TL0 = 0x18;
+  16   1          TH0 = 0xFC;
+  17   1      }
+  18          
+  19          //?????????
+  20          static void IInterruptDisablle()
+  21          {
+  22   1          IE = 0x00;    //EA?,?????
+  23   1          TR0 = 0;
+  24   1      }
+  25          
+  26          //?????????
+  27          enum InterruptState getInterruptState()
+  28          {
+  29   1          return (IE & 0x80)? InterruptOpen : InterruptClose;
+  30   1      }
+  31          //????????????
+  32          enum InterruptState interruptDisable()
+  33          {
+  34   1          enum InterruptState OldState = getInterruptState();
+  35   1          if(OldState!=InterruptOpen)
+  36   1          {
+  37   2              return -1;
+  38   2          }
+  39   1          else {
+  40   2              interruptDisable();
+  41   2          }
+  42   1      
+  43   1          return InterruptClose;
+  44   1      }
+  45          //??????????
+  46          enum InterruptState interruptEnable()
+  47          {
+  48   1          enum InterruptState OldState = getInterruptState();
+  49   1          if(OldState != InterruptClose)
+  50   1          {
+  51   2              return -1;
+  52   2          }
+  53   1          else{
+  54   2              IInterruptEnable();
+C51 COMPILER V9.54   INTERRUPT                                                             03/30/2026 21:56:15 PAGE 2   
+
+  55   2          }
+  56   1          return InterruptOpen;
+  57   1      }
+  58          
+  59          
+  60          void interruptInit()
+  61          {
+  62   1          interruptTimerInit();
+  63   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     69    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

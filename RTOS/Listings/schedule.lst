@@ -1,0 +1,197 @@
+C51 COMPILER V9.54   SCHEDULE                                                              03/30/2026 21:56:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SCHEDULE
+OBJECT MODULE PLACED IN .\Objects\schedule.obj
+COMPILER INVOKED BY: E:\keil5\C51\BIN\C51.EXE schedule.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Lis
+                    -tings\schedule.lst) TABS(2) OBJECT(.\Objects\schedule.obj)
+
+line level    source
+
+   1          
+   2          #include "list.h"
+   3          #include "interrupt.h"
+   4          #include "schedule.h"
+   5          
+   6          
+   7          xdata uint8_t stack_ptr = TASK_STACK_START;
+   8          
+   9          extern void Schedule(void);
+  10          xdata struct Task* CurrentTask;               //??CurrentTask?????????tcb??
+  11          
+  12          
+  13          
+  14          void Switch1()
+  15          {
+  16   1          enum InterruptState interruptStatus =  interruptDisable();
+  17   1          //
+  18   1          //
+  19   1          //
+  20   1          //
+  21   1          if(ListEmpty(&ReadyList))
+  22   1          {
+  23   2              return;
+  24   2          }
+  25   1          else{
+  26   2              struct Node* tempNode = listPop(&ReadyList);
+  27   2              CurrentTask->status = TASK_READY;
+  28   2              listAppend(&ReadyList,CurrentTask->ReadyListNode);
+  29   2             
+  30   2              CurrentTask = elem2entry(struct Task,ReadyListNode,tempNode);
+  31   2              CurrentTask->status = TASK_RUNNING;
+  32   2          }
+  33   1          interruptStatus = interruptEnable();
+  34   1      }
+  35          
+  36          
+  37          //========================================================================================================
+  38          //?51??256??RAM????????
+  39          //??????????????stack_ptr???????????????,??????????????
+  40          uint8_t* alloc_stack_51(uint8_t size)
+  41          {
+  42   1          uint8_t p;
+  43   1          if(stack_ptr + size > 0x80)
+  44   1          {
+  45   2              return NULL;                    //????
+  46   2          }
+  47   1          p = stack_ptr;
+  48   1          stack_ptr += size;
+  49   1      
+  50   1          return (uint8_t*)p;
+  51   1      }
+  52          
+  53          //???????????TCB,????????
+  54          void task_create(struct Task* TCB,void (*thread_func)(void),uint8_t prio)
+C51 COMPILER V9.54   SCHEDULE                                                              03/30/2026 21:56:15 PAGE 2   
+
+  55          {
+  56   1          struct Stack* stack = (struct Stack*)alloc_stack_51(TASK_STACK_SIZE);
+  57   1          if(stack == NULL){
+  58   2              return ;            //????
+  59   2          }
+  60   1          stack->ACC = 0;
+  61   1          stack->B   = 0;
+  62   1          stack->PSW = 0;
+  63   1          stack->DPL = 0;
+  64   1          stack->DPH = 0;
+  65   1          stack->R0 = stack->R1 = stack->R2 = stack->R3 = 0;
+  66   1          stack->R4 = stack->R5 = stack->R6 = stack->R7 = 0;
+  67   1          stack->arg1 = stack->arg2 = stack->arg3 = 0;
+  68   1      
+  69   1          stack->PCH = (uint16_t)thread_func >> 8;            //??????????????????????FLASH??????????16?,???????
+             -??????
+  70   1          stack->PCL = (uint16_t)thread_func & 0x00FF;        //???16??????
+  71   1      
+  72   1          TCB->prio = prio;                           //????? 
+  73   1          TCB->tickTime = prio;                          //??????prio
+  74   1          TCB->stack_ptr = (uint8_t*)stack;                     //????????TCB
+  75   1          TCB->status = TASK_READY;                   //????????
+  76   1      
+  77   1          listAppend(&AllList,TCB->allListNode);
+  78   1          listAppend(&ReadyList,TCB->ReadyListNode);      //??????????
+  79   1      
+  80   1      }
+  81          
+  82          //
+  83          //
+  84          //=================================================================================
+  85          //
+  86          //
+  87          
+  88          
+  89          
+  90          
+  91          
+  92          
+  93          //===================================================================================
+  94          //????,???ReadyList??????? ???????????
+  95          
+  96          
+  97          //???????????TCB??
+  98          struct Task* getCurrentTask()
+  99          {
+ 100   1          struct Task* currentTask = CurrentTask; 
+ 101   1          return currentTask;
+ 102   1      }
+ 103          
+ 104          
+ 105          //======================================
+ 106          //????????????????????
+ 107          void TimerService()
+ 108          {
+ 109   1          enum InterruptState interruptStatus = interruptDisable();
+ 110   1          //
+ 111   1          //??
+ 112   1          //
+ 113   1      
+ 114   1          Node* nextNode;
+ 115   1          Node* BlockNode = BlockList.head->next;
+C51 COMPILER V9.54   SCHEDULE                                                              03/30/2026 21:56:15 PAGE 3   
+
+ 116   1          while(BlockNode != NULL){
+ 117   2              struct Task* TCB = elem2entry(struct Task,BlockListNode,BlockNode);
+ 118   2              if(TCB->status == TASK_DELAY){
+ 119   3                  TCB->delayTick--;
+ 120   3                  if(TCB->delayTick == 0)
+ 121   3                  {
+ 122   4                      nextNode = BlockNode->next;
+ 123   4                      listRemove(&BlockList,BlockNode);        //????????????????,???????,????????next????????
+ 124   4                  
+ 125   4                      listAppend(&ReadyList,TCB->ReadyListNode);
+ 126   4                      TCB->status = TASK_READY;
+ 127   4                  }
+ 128   3              }
+ 129   2              //???????????????????????????
+ 130   2              else if(TCB->status == TASK_BLOCK){
+ 131   3                  //?????????????delayTick--??
+ 132   3              }
+ 133   2              BlockNode = nextNode;
+ 134   2          }
+ 135   1      
+ 136   1      
+ 137   1          interruptStatus = interruptEnable();
+ 138   1          //
+ 139   1          //??
+ 140   1          //
+ 141   1      }
+ 142          
+ 143          
+ 144          //??????????
+ 145          void TimeService2()
+ 146          {
+ 147   1          enum InterruptState interruptStatus = interruptDisable();
+ 148   1          struct Task* currentTask = getCurrentTask();
+ 149   1          if(--currentTask->tickTime <=0)
+ 150   1          {
+ 151   2              currentTask->tickTime = currentTask->prio;     //?????
+ 152   2                                         //????????
+ 153   2              Schedule();
+ 154   2              
+ 155   2          }
+ 156   1      
+ 157   1          interruptStatus = interruptEnable();
+ 158   1      }
+ 159          
+ 160          //====================================
+ 161          
+ 162          
+ 163          
+ 164          
+ 165          
+ 166          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    839    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4    ----
+   PDATA SIZE       =   ----      26
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V9.54   SCHEDULE                                                              03/30/2026 21:56:15 PAGE 4   
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

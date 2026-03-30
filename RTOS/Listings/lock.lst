@@ -1,0 +1,116 @@
+C51 COMPILER V9.54   LOCK                                                                  03/30/2026 21:56:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE LOCK
+OBJECT MODULE PLACED IN .\Objects\lock.obj
+COMPILER INVOKED BY: E:\keil5\C51\BIN\C51.EXE lock.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\lock.lst) TABS(2) OBJECT(.\Objects\lock.obj)
+
+line level    source
+
+   1          #include "lock.h"
+   2          #include "interrupt.h"
+   3          #include "schedule.h"
+   4          #include "list.h"
+   5          
+   6          void semaInit(struct semaphore* psema,uint8_t Value)
+   7          {
+   8   1          psema->value = Value;
+   9   1          listInit(&psema->waiters,"semaWaiters");
+  10   1      }
+  11          
+  12          void lockInit(struct lock* plock)
+  13          {
+  14   1          plock->holder = NULL;
+  15   1          plock->holder_repeat_nr = 0;
+  16   1          semaInit(&plock->semaphore,1);  //?????,???????1,??0?1????
+  17   1      }
+  18          
+  19          //down??
+  20          void sema_down(struct semaphore* psema)
+  21          {
+  22   1          enum InterruptState nowState = interruptDisable();     //???????????
+  23   1          //
+  24   1          //please use assert
+  25   1          //
+  26   1          while(psema->value == 0){
+  27   2              struct Task* currentTask = getCurrentTask();
+  28   2              listAppend(&psema->waiters,&currentTask->ReadyListNode);
+*** WARNING C182 IN LINE 28 OF lock.c: pointer to different objects
+  29   2              currentTask->status = TASK_WAITTING;
+  30   2      
+  31   2          }   
+  32   1          psema->value--;
+  33   1          nowState = interruptEnable();   //???
+  34   1          //
+  35   1          //please use assert
+  36   1          //
+  37   1      }
+  38          
+  39          //up??
+  40          void sema_up(struct semaphore* psema)
+  41          {
+  42   1          enum InterruptState nowState = interruptDisable();     //???????????
+  43   1          //
+  44   1          //please use assert
+  45   1          //
+  46   1          if(ListEmpty(&psema->waiters))
+  47   1          {
+  48   2              psema->value++;
+  49   2          }
+  50   1          else {
+  51   2              struct Node* tempNode = listPop(&psema->waiters);
+  52   2              struct Task* tempTask = elem2entry(struct Task,ReadyListNode,tempNode);
+  53   2              tempTask->status = TASK_READY;
+C51 COMPILER V9.54   LOCK                                                                  03/30/2026 21:56:15 PAGE 2   
+
+  54   2          }
+  55   1          nowState = interruptEnable();
+  56   1          //
+  57   1          //please use assert
+  58   1          //
+  59   1      }
+  60          //?????
+  61          void lock_acquire(struct lock* plock)
+  62          {
+  63   1          if(plock->holder != getCurrentTask())   //???????????????,??????,???????????
+  64   1          {
+  65   2              sema_down(&plock->semaphore);
+  66   2              plock->holder = getCurrentTask();
+*** WARNING C182 IN LINE 66 OF lock.c: pointer to different objects
+  67   2              //
+  68   2              //assert
+  69   2              //
+  70   2              plock->holder_repeat_nr = 1;
+  71   2          }
+  72   1          else{
+  73   2              plock->holder_repeat_nr++;
+  74   2          }
+  75   1      
+  76   1      }
+  77          
+  78          //?????
+  79          void lock_release(struct lock* plock){
+  80   1          
+  81   1          if(plock->holder_repeat_nr >1){
+  82   2              plock->holder_repeat_nr--;
+  83   2              return;
+  84   2          }
+  85   1          plock->holder = NULL;           //??????????up????
+  86   1          plock->holder_repeat_nr = 0;    //?sema_up???????,????????,???????????holder_repeat_nr??1,???????
+  87   1          sema_up(&plock->semaphore);
+  88   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    569    ----
+   CONSTANT SIZE    =     12    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----      26
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,82 @@
+A51 MACRO ASSEMBLER  SCHEDULEASM                                                          03/30/2026 21:56:15 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.02c
+OBJECT MODULE PLACED IN .\Objects\ScheduleASM.obj
+ASSEMBLER INVOKED BY: E:\keil5\C51\BIN\A51.EXE ScheduleASM.a51 SET(COMPACT) DEBUG PRINT(.\Listings\ScheduleASM.lst) OBJE
+                      CT(.\Objects\ScheduleASM.obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+                       1             EXTRN DATA  (_CurrentTask)
+                       2             EXTRN CODE  (_Switch1)
+                       3             PUBLIC _Schedule
+                       4     
+                       5     
+0000                   6     _Schedule:
+0000 C0E0              7             PUSH ACC
+0002 C0F0              8             PUSH B
+0004 C0D0              9             PUSH  PSW
+0006 C082             10         PUSH  DPL
+0008 C083             11             PUSH  DPH
+000A C000             12         PUSH  0
+000C C001             13         PUSH  1
+000E C002             14         PUSH  2
+0010 C003             15         PUSH  3
+0012 C004             16         PUSH  4
+0014 C005             17         PUSH  5
+0016 C006             18         PUSH  6
+0018 C007             19         PUSH  7
+                      20     
+001A A800     F       21         MOV R0 , _CurrentTask               
+001C A681             22         MOV @R0 , SP
+                      23     
+001E 120000   F       24         LCALL _Switch1              
+                      25     
+0021 A800     F       26         MOV R0, _CurrentTask
+0023 8681             27         MOV SP, @R0
+                      28     
+                      29         
+                      30     
+                      31         
+                      32     
+0025 D007             33         POP 7
+0027 D006             34         POP 6
+0029 D005             35         POP 5
+002B D004             36         POP 4
+002D D003             37         POP 3
+002F D002             38         POP 2
+0031 D001             39         POP 1
+0033 D000             40         POP 0
+0035 D083             41         POP DPH
+0037 D082             42         POP DPL
+0039 D0D0             43         POP PSW
+003B D0F0             44         POP B
+003D D0E0             45         POP ACC
+                      46     
+003F 22               47         RET
+                      48             END
+                                     
+A51 MACRO ASSEMBLER  SCHEDULEASM                                                          03/30/2026 21:56:15 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+ACC. . . . . . . .  D ADDR   00E0H   A   
+B. . . . . . . . .  D ADDR   00F0H   A   
+DPH. . . . . . . .  D ADDR   0083H   A   
+DPL. . . . . . . .  D ADDR   0082H   A   
+PSW. . . . . . . .  D ADDR   00D0H   A   
+SP . . . . . . . .  D ADDR   0081H   A   
+_CURRENTTASK . . .  D ADDR   -----       EXT
+_SCHEDULE. . . . .  C ADDR   0000H   A   
+_SWITCH1 . . . . .  C ADDR   -----       EXT
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

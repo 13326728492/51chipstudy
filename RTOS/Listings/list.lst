@@ -1,0 +1,120 @@
+C51 COMPILER V9.54   LIST                                                                  03/30/2026 21:56:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE LIST
+OBJECT MODULE PLACED IN .\Objects\list.obj
+COMPILER INVOKED BY: E:\keil5\C51\BIN\C51.EXE list.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\list.lst) TABS(2) OBJECT(.\Objects\list.obj)
+
+line level    source
+
+   1          #include "list.h"
+   2          
+   3          
+   4          
+   5          
+   6          
+   7          void listInit(struct List* list,char* ListName)
+   8          {
+   9   1          list->listName = ListName;
+  10   1          list->head = NULL;
+  11   1          list->tail = NULL;
+  12   1          list->head->next = list->tail;
+  13   1      
+  14   1      }
+  15          
+  16          void listAppend(struct List* list,Node* node)
+  17          {
+  18   1          node->next = NULL;
+  19   1          if(list->head->next == NULL)
+  20   1          {
+  21   2              list->head->next = node;
+  22   2              list->tail = node;
+  23   2              
+  24   2          }
+  25   1          list->tail->next = node;
+  26   1          list->tail = node;
+  27   1      
+  28   1      
+  29   1      }
+  30          
+  31          void listPush(struct List* list,struct Node* node)
+  32          {
+  33   1          struct Node* temp = list->head->next;
+  34   1          node->next = NULL;
+  35   1          
+  36   1          list->head->next = node;
+  37   1          node->next = temp;
+  38   1      
+  39   1      }
+  40          
+  41          struct Node* listPop(struct List* list)
+  42          {
+  43   1          struct Node* ret = list->head->next;
+  44   1          list->head->next = list->head->next->next;
+  45   1          ret->next = NULL;
+  46   1      
+  47   1          return ret;
+  48   1      }
+  49          
+  50          
+  51          struct Node* NodeFind(struct List* plist,struct Node* node)
+  52          {
+  53   1          struct Node* temp = plist->head->next;
+  54   1          while(temp!=NULL)
+C51 COMPILER V9.54   LIST                                                                  03/30/2026 21:56:15 PAGE 2   
+
+  55   1          {
+  56   2              if(temp == node)
+  57   2              {
+  58   3                  return node;
+  59   3              }
+  60   2              temp=temp->next;
+  61   2          }
+  62   1          return 0;
+  63   1      }
+  64          
+  65          BOOL ListEmpty(struct List* plist)
+  66          {
+  67   1        return (plist->head->next == NULL)? 1 : 0;
+  68   1      }
+  69          //????
+  70          struct Node* listRemove(struct List* list,Node* node)
+  71          {
+  72   1          struct Node* prevNode = list->head;
+  73   1          struct Node* currentNode = list->head->next;
+  74   1          while(currentNode != NULL&&prevNode->next->next != NULL)
+  75   1          {
+  76   2              if(currentNode == node){
+  77   3                  prevNode->next = currentNode->next;
+  78   3                  currentNode->next = NULL;
+  79   3                  return currentNode;
+  80   3              }
+  81   2              currentNode = currentNode -> next;
+  82   2              prevNode = prevNode->next;
+  83   2          }
+  84   1      
+  85   1          return NULL;
+  86   1      }
+  87          
+  88          
+  89          void SystemListInit()
+  90          {
+  91   1          listInit(&AllList,"AllList");
+  92   1          listInit(&ReadyList,"ReadyList");
+  93   1          listInit(&BlockList,"BlockList");
+  94   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    988    ----
+   CONSTANT SIZE    =     28    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----      48
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

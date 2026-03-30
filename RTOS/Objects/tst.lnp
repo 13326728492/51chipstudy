@@ -1,0 +1,11 @@
+".\Objects\STARTUP.obj",
+".\Objects\ScheduleASM.obj",
+".\Objects\list.obj",
+".\Objects\schedule.obj",
+".\Objects\lock.obj",
+".\Objects\Tool.obj",
+".\Objects\interrupt.obj",
+".\Objects\main.obj",
+".\Objects\queue.obj" 
+TO ".\Objects\tst" 
+PRINT(".\Listings\tst.m51") RAMSIZE(256) 
