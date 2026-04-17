@@ -1,0 +1,10 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\LCD12864.obj",
+".\Objects\Time.obj",
+".\Objects\Goperate.obj",
+".\Objects\I2C.obj",
+".\Objects\AT24C02.obj" 
+TO ".\Objects\testfor" 
+PRINT(".\Listings\testfor.m51") RAMSIZE(256) 

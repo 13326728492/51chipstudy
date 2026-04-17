@@ -1,0 +1,176 @@
+C51 COMPILER V9.55   GOPERATE                                                              04/16/2026 16:54:57 PAGE 1   
+
+
+C51 COMPILER V9.55, COMPILATION OF MODULE GOPERATE
+OBJECT MODULE PLACED IN .\Objects\Goperate.obj
+COMPILER INVOKED BY: E:\keil\keil_v5\C51\BIN\C51.EXE E:\Goperate.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\L
+                    -istings\Goperate.lst) TABS(2) OBJECT(.\Objects\Goperate.obj)
+
+line level    source
+
+   1          #include "LCD12864.h"
+   2          #include "Goperate.h"
+   3          
+   4          #define renderCofficient1 4
+   5          #define renderCofficient2 6
+   6          int ray_x;
+   7          int ray_y;
+   8          int distance;
+   9          
+  10          
+  11          int lineHeight;
+  12          int drawStart;
+  13          int drawEnd;
+  14          
+  15          const int screenH;
+  16          
+  17          
+  18           
+  19          void cast_ray(int x,unsigned char map[8][8])
+  20          {
+  21   1        int camera_x = x - 64;
+  22   1        int rdx,rdy;
+  23   1        int gx,gy;
+  24   1        if(dir == 0 || dir == 2)
+  25   1        {
+  26   2          rdx = dx[dir]/2;
+  27   2          rdy = dy[dir]/2 + camera_x/renderCofficient1;
+  28   2        }
+  29   1        else
+  30   1        {
+  31   2          rdx = dx[dir]/2 + camera_x/renderCofficient1;
+  32   2          rdy = dy[dir]/2;
+  33   2        }
+  34   1        
+  35   1        ray_x = px;
+  36   1        ray_y = py;
+  37   1        distance = 0;
+  38   1        // caculate ray distance
+  39   1        while(1)
+  40   1        {
+  41   2          ray_x += rdx;
+  42   2          ray_y += rdy;
+  43   2          distance += 2;
+  44   2          
+  45   2          gx = ray_x/4;
+  46   2          gy = ray_y/4;
+  47   2          if(gx<0 || gx >= 8 || gy <0 || gy >=8)break;
+  48   2          if(map[gy][gx] == 1)break;
+  49   2        }
+  50   1      }
+  51            
+  52          //void render(void)
+  53          //{
+  54          //  unsigned char x;
+C51 COMPILER V9.55   GOPERATE                                                              04/16/2026 16:54:57 PAGE 2   
+
+  55          //  int gx_hit;
+  56          //  int gy_hit;
+  57          //  
+  58          //  for(x = 0 ; x < 128 ; x++)
+  59          //  {
+  60          
+  61          //    cast_ray(x);
+  62          //    gx_hit = ray_x/4;
+  63          //    gy_hit = ray_y/4;
+  64          //    lineHeight = (64*renderCofficient2)/distance;
+  65          //    drawStart = 32 - lineHeight/2 ;
+  66          //    drawEnd = 32 + lineHeight/2 ;
+  67          //    
+  68          //    if(drawStart < 0)drawStart = 0;
+  69          //    if(drawEnd >= 64)drawEnd = 63;
+  70          //    
+  71          //    if(map[gy_hit][gx_hit])
+  72          //    {
+  73          //      LCD_Draw_Vertical_Line(x,drawStart,drawEnd);
+  74          //    }
+  75          //    else if(map[gy_hit][gx_hit] == 2)
+  76          //    {
+  77          //      int mid = (drawStart + drawEnd)/2;
+  78          //      LCD_Draw_Vertical_Line(x,drawStart,mid-4);
+  79          //      LCD_Draw_Vertical_Line(x,mid+4,drawEnd);
+  80          //    }
+  81          //  }
+  82          //  
+  83          //}
+  84          
+  85          void rendertest2(unsigned char map[8][8])
+  86          {
+  87   1        unsigned char x;
+  88   1        int gx_hit;
+  89   1        int gy_hit;
+  90   1        for(x = 0;x<128;x++)
+  91   1        {
+  92   2          cast_ray(x,map);
+  93   2          gx_hit = ray_x/4;
+  94   2          gy_hit = ray_y/4;
+  95   2          lineHeight = (64*renderCofficient2)/distance;
+  96   2          drawStart = 12 - lineHeight/4 ;
+  97   2          drawEnd = drawStart + lineHeight;
+  98   2          
+  99   2          if(drawStart < 0)drawStart = 0;
+ 100   2          if(drawEnd >= 64)drawEnd = 63;
+ 101   2          
+ 102   2          if(map[gy_hit][gx_hit])
+ 103   2          {
+ 104   3            LCD_Draw_Vertical_Line(x,drawStart,drawEnd);
+ 105   3          }
+ 106   2          else if(map[gy_hit][gx_hit] == 2)
+ 107   2          {
+ 108   3            int mid = (drawStart + drawEnd)/2;
+ 109   3            LCD_Draw_Vertical_Line(x,drawStart,mid-4);
+ 110   3            LCD_Draw_Vertical_Line(x,mid+4,drawEnd);
+ 111   3          }
+ 112   2        }
+ 113   1      }
+ 114          
+ 115          void turn(void)
+ 116          {
+C51 COMPILER V9.55   GOPERATE                                                              04/16/2026 16:54:57 PAGE 3   
+
+ 117   1        dir++;
+ 118   1        if(dir > 3)dir = 0;
+ 119   1      }
+ 120          
+ 121          void move_forward(void)
+ 122          {
+ 123   1        int new_x = px  + dx[dir];
+ 124   1        int new_y = py  + dy[dir];
+ 125   1        
+ 126   1        int gx = new_x /4;
+ 127   1        int gy = new_y /4;
+ 128   1        
+ 129   1        if(map[gy][gx] == 1)return;   //Åö×²¼ì²â
+ 130   1        
+ 131   1        px = new_x;
+ 132   1        py = new_y;
+ 133   1      }
+ 134          
+ 135          void move_back(void)
+ 136          {
+ 137   1        int new_x = px - dx[dir];
+ 138   1        int new_y = py - dy[dir];
+ 139   1        
+ 140   1        int gx = new_x /4;
+ 141   1        int gy = new_y /4;
+ 142   1        
+ 143   1        if(map[gy][gx] == 1)return;
+ 144   1        
+ 145   1        px = new_x;
+ 146   1        py = new_y;
+ 147   1        
+ 148   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    844    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     14      27
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

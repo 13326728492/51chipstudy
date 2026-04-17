@@ -1,0 +1,731 @@
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 1   
+
+
+C51 COMPILER V9.55, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\keil\keil_v5\C51\BIN\C51.EXE E:\main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "LCD12864.h"
+   2          #include "Delay.h"
+   3          #include "AT24C02.h"
+   4          #include "Time.h"
+   5          #include <reg52.h>
+   6          #include "Goperate.h"
+   7          
+   8          sbit P27 = P2^7;
+   9          sbit P33 = P3^3;
+  10          sbit P35 = P3^5;
+  11          sbit P34 = P3^4;
+  12          sbit P25 = P2^5;
+  13          sbit P24 = P2^4;
+  14          
+  15          typedef enum{
+  16            MENU,
+  17            GAME,
+  18            LEVEL_CHOICE
+  19          }State;
+  20          
+  21          typedef enum{
+  22            KEY_DOWN,
+  23            KEY_OK,
+  24            NONEMwo
+  25          
+  26          }MenuKeyState;
+  27          
+  28          typedef enum{
+  29            KEY_FORWARD,
+  30            KEY_BACK,
+  31            KEY_TURN,
+  32            KEY_BREAK,
+  33            NONEG
+  34          }GameKeyState;
+  35          
+  36          
+  37          
+  38          
+  39          State now_state = MENU;
+  40          
+  41          unsigned char menu_select = 0;
+  42          unsigned char level_state = 0;
+  43          
+  44          //player digital
+  45          int px = 6;
+  46          int py = 6;
+  47          int dir = 0;
+  48          
+  49          int dx[4]={2,0,-2,0};
+  50          int dy[4]={0,-2,0,2};
+  51          
+  52          
+  53          
+  54          xdata unsigned char map1[8][8] = {
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 2   
+
+  55              {1,1,1,1,1,1,1,1},
+  56              {1,0,0,0,0,0,0,1},
+  57              {1,0,1,1,0,0,0,1},
+  58              {1,0,1,0,0,1,1,1},
+  59              {1,0,1,0,1,1,2,1},
+  60              {1,0,1,0,0,0,0,1},
+  61              {1,0,0,0,0,0,0,1},
+  62              {1,1,1,1,1,1,1,1}
+  63          };
+  64          xdata unsigned char map2[8][8] = {
+  65              {1,1,1,1,1,1,1,1},
+  66              {1,0,1,1,0,0,0,1},
+  67              {1,0,1,1,0,1,1,1},
+  68              {1,0,0,0,0,1,0,1},
+  69              {1,0,1,1,1,1,0,1},
+  70              {1,0,0,0,1,0,0,1},
+  71              {1,1,1,0,0,0,2,1},
+  72              {1,1,1,1,1,1,1,1}
+  73          };
+  74          
+  75          xdata unsigned char map[8][8] = {0};
+  76          
+  77          
+  78          
+  79          //key
+  80          MenuKeyState menu_key_state;
+  81          GameKeyState game_key_state;
+  82          
+  83          
+  84          
+  85          bit key_menu_switch_flag;
+  86          bit key_menu_select_flag;
+  87          bit key_game_forward_flag;
+  88          bit key_game_back_flag;
+  89          bit key_game_turn_flag;
+  90          bit key_game_break_flag;
+  91          
+  92          
+  93          
+  94          
+  95          
+  96          
+  97          
+  98          void LCD_Clear_When_Switch_Mode(void);
+  99          void draw_menu(void);
+ 100          void menuKey(void);
+ 101          void key_game(void);
+ 102          void key_clear_all_flags(void);
+ 103          void judge_if_success(void);
+ 104          void check_level_state(void);
+ 105          void read_store_test(void);
+ 106          void read_write_test(void);
+ 107          
+ 108          
+ 109          
+ 110          void key_clear_all_flags(void)
+ 111          {
+ 112   1        key_menu_switch_flag = 0;
+ 113   1        key_menu_select_flag = 0;
+ 114   1        key_game_forward_flag = 0;
+ 115   1        key_game_back_flag = 0;
+ 116   1        key_game_turn_flag = 0;
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 3   
+
+ 117   1        key_game_break_flag = 0;
+ 118   1      }
+ 119          
+ 120          
+ 121          
+ 122          
+ 123          
+ 124          void LCD_Clear_When_Switch_Mode(void)
+ 125          {
+ 126   1        if(now_state == MENU)
+ 127   1        {
+ 128   2          LCD_Text_Mode_Clear();
+ 129   2        }
+ 130   1        else
+ 131   1        {
+ 132   2          LCD_GDRAM_MODE_CLEAR();
+ 133   2        }
+ 134   1      }
+ 135          
+ 136          void draw_menu(void)
+ 137          {
+ 138   1      //  LCD_Text_Mode_Clear();
+ 139   1        
+ 140   1        LCD_String(0,0," START NEW     ");
+ 141   1        LCD_String(0,1," CHOICE        ");
+ 142   1        LCD_String(0,2," EXIT          ");
+ 143   1        LCD_String(0,3," CONTINUS      ");
+ 144   1        
+ 145   1        if(menu_select == 0)
+ 146   1        {
+ 147   2          LCD_String(0,0,">");
+ 148   2          LCD_String(0,3," ");
+ 149   2        }
+ 150   1        else if(menu_select == 1)
+ 151   1        {
+ 152   2          LCD_String(0,1,">");
+ 153   2          LCD_String(0,0," ");
+ 154   2        }
+ 155   1        else if(menu_select == 2)
+ 156   1        {
+ 157   2          LCD_String(0,2,">");
+ 158   2          LCD_String(0,1," ");
+ 159   2        }
+ 160   1        else if(menu_select == 3)
+ 161   1        {
+ 162   2          LCD_String(0,3,">");
+ 163   2          LCD_String(0,2," ");
+ 164   2        }
+ 165   1      }
+ 166          
+ 167          //void menuKey(void)
+ 168          //{
+ 169          //  if(menu_key_state == KEY_DOWN)
+ 170          //  {
+ 171          //    menu_select++;
+ 172          //    if(menu_select>3)menu_select = 0;
+ 173          //    draw_menu();
+ 174          //    delay(100);
+ 175          //  }
+ 176          //  else if(menu_key_state == KEY_OK)
+ 177          //  {
+ 178          //    if(menu_select == 0)
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 4   
+
+ 179          //    {
+ 180          //      if(menu_select ==0)
+ 181          //      {
+ 182          //        now_state = GAME;
+ 183          //        //restart and init
+ 184          //        px = 6;
+ 185          //        py = 6;
+ 186          //        dir = 0;
+ 187          //      }
+ 188          //    }
+ 189          //    else if(menu_select == 1)
+ 190          //    {
+ 191          //      now_state = MENU;
+ 192          //      draw_menu();
+ 193          //    }
+ 194          //    else if(menu_select == 2)
+ 195          //    {
+ 196          //      LCD_Text_Mode_Clear();
+ 197          //      LCD_String(2,2,"Bye~");
+ 198          //      while(1);
+ 199          //    }
+ 200          //    else if(menu_select == 3)
+ 201          //    {
+ 202          //      now_state = GAME;
+ 203          //      
+ 204          //      //load
+ 205          //    }
+ 206          //  }
+ 207          //}
+ 208          
+ 209          //void key_game(void)
+ 210          //{
+ 211          //  if(game_key_state == KEY_FORWARD)
+ 212          //  {
+ 213          ////    move_forward();
+ 214          //  }
+ 215          //  else if(game_key_state == KEY_BACK)
+ 216          //  {
+ 217          ////    move_back();
+ 218          //  }
+ 219          //  else if(game_key_state == KEY_TURN)
+ 220          //  {
+ 221          ////    turn();
+ 222          //  }
+ 223          //  else if(game_key_state == KEY_BREAK)
+ 224          //  {
+ 225          //    now_state = MENU;
+ 226          ////    save_game();
+ 227          //    LCD_Enter_Text_Mode();
+ 228          //    LCD_Text_Mode_Clear();
+ 229          //    LCD_String(0,0,"Save OK!");
+ 230          //    delay(2000);
+ 231          //  }
+ 232          //}
+ 233          
+ 234          
+ 235          
+ 236          
+ 237          
+ 238          void test_draw_menu()
+ 239          {
+ 240   1        
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 5   
+
+ 241   1      
+ 242   1        if(P27 == 0)
+ 243   1        {
+ 244   2          delay(190);
+ 245   2          menu_select++;
+ 246   2          if(menu_select==4){
+ 247   3            menu_select = 0;
+ 248   3          }
+ 249   2          draw_menu();
+ 250   2        }
+ 251   1        else if(P33 == 0)
+ 252   1        {
+ 253   2          delay(190);
+ 254   2          if(menu_select == 0)
+ 255   2          {
+ 256   3            now_state = GAME;
+ 257   3            LCD_Text_Mode_Clear();
+ 258   3            LCD_Enter_GDRAM_Mode();
+ 259   3            LCD_GDRAM_MODE_CLEAR();
+ 260   3            px = 6;
+ 261   3            py = 6;
+ 262   3            dir = 0;
+ 263   3          check_level_state();
+ 264   3          }
+ 265   2          if(menu_select == 1)
+ 266   2          {
+ 267   3            now_state = LEVEL_CHOICE;
+ 268   3            LCD_Text_Mode_Clear();
+ 269   3      //      LCD_Text_Mode_Clear();
+ 270   3      //      LCD_String(1,0," Easy");
+ 271   3      //      LCD_String(1,1," Difficult");
+ 272   3      //      levelJudge();
+ 273   3      //      if(P24 == 0)
+ 274   3      //      {
+ 275   3      //        delay(190);
+ 276   3      //        level_state++;
+ 277   3      //        if(level_state >1 )level_state = 0;
+ 278   3      //        
+ 279   3      //      }
+ 280   3              now_state = LEVEL_CHOICE;
+ 281   3              LCD_Text_Mode_Clear();
+ 282   3          }
+ 283   2          if(menu_select == 2)
+ 284   2          {
+ 285   3            LCD_Text_Mode_Clear();
+ 286   3            LCD_String(2,2,"Bye~");
+ 287   3            delay(1000);
+ 288   3            LCD_Text_Mode_Clear();
+ 289   3            while(1);
+ 290   3          }
+ 291   2          if(menu_select == 3)
+ 292   2          {
+ 293   3            now_state = GAME;
+ 294   3            LCD_Text_Mode_Clear();
+ 295   3            LCD_Enter_GDRAM_Mode();
+ 296   3      //      px = AT24C02_ReadByte(1);
+ 297   3      //      py = AT24C02_ReadByte(2);
+ 298   3      //      dir = AT24C02_ReadByte(3);
+ 299   3      //      level_state = AT24C02_ReadByte(4);
+ 300   3      //      check_level_state();
+ 301   3            read_write_test();
+ 302   3          }
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 6   
+
+ 303   2      
+ 304   2          
+ 305   2        }
+ 306   1        
+ 307   1      }
+ 308          
+ 309          
+ 310          
+ 311          
+ 312          
+ 313          void testGameKey(void)
+ 314          {
+ 315   1        if(P34 == 0)
+ 316   1        {
+ 317   2          delay(190);
+ 318   2          move_forward();
+ 319   2          LCD_GDRAM_MODE_CLEAR();
+ 320   2        }
+ 321   1        else if(P35 == 0)
+ 322   1        {
+ 323   2          delay(190);
+ 324   2          move_back();
+ 325   2          LCD_GDRAM_MODE_CLEAR();
+ 326   2        }
+ 327   1        else if(P24 == 0)
+ 328   1        {
+ 329   2          delay(190);
+ 330   2          turn();
+ 331   2          LCD_GDRAM_MODE_CLEAR();
+ 332   2        }
+ 333   1        else if(P25 == 0)
+ 334   1        {
+ 335   2          delay(190);
+ 336   2          now_state = MENU;
+ 337   2          LCD_GDRAM_MODE_CLEAR();
+ 338   2          LCD_Enter_Text_Mode();
+ 339   2      //    AT24C02_WriteByte(1,px);
+ 340   2      //    AT24C02_WriteByte(2,py);
+ 341   2      //    AT24C02_WriteByte(3,dir);
+ 342   2      //    AT24C02_WriteByte(4,level_state);
+ 343   2          read_write_test();
+ 344   2          delay(5);
+ 345   2          LCD_Text_Mode_Clear();
+ 346   2          LCD_String(1,1,"Save Success!");
+ 347   2          delay(1000);
+ 348   2          LCD_Text_Mode_Clear();
+ 349   2          delay(100);
+ 350   2          LCD_Text_Mode_Clear();
+ 351   2          delay(1000);
+ 352   2          draw_menu();
+ 353   2          LCD_Text_Mode_Clear();
+ 354   2          draw_menu();
+ 355   2        }
+ 356   1      }
+ 357          
+ 358          
+ 359          
+ 360          void testrender()
+ 361          {
+ 362   1        unsigned char i;
+ 363   1        for(i=0;i<128;i++){
+ 364   2        LCD_Draw_Vertical_Line(i,1,10);
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 7   
+
+ 365   2        }
+ 366   1      }
+ 367          
+ 368          void judge_if_success(void)
+ 369          {
+ 370   1        if(map[py/4][px/4]==2)
+ 371   1        {
+ 372   2          now_state = MENU; 
+ 373   2          LCD_Enter_Text_Mode();
+ 374   2          LCD_String(1,2,"Configuration!");
+ 375   2          delay(3000);
+ 376   2        }
+ 377   1      }
+ 378          
+ 379          void draw_level_choice(void)
+ 380          {
+ 381   1        LCD_String(0,0," Easy");
+ 382   1        LCD_String(0,1," Difficult");
+ 383   1        if(level_state == 0)
+ 384   1        {
+ 385   2          LCD_String(0,0,">");
+ 386   2          LCD_String(0,1," ");
+ 387   2        }
+ 388   1        else
+ 389   1        {
+ 390   2          LCD_String(0,0," ");
+ 391   2          LCD_String(0,1,">");
+ 392   2        }
+ 393   1        
+ 394   1        
+ 395   1      }
+ 396          
+ 397          void testLevelChoice(void)
+ 398          {
+ 399   1        unsigned char i,j;
+ 400   1        draw_level_choice();
+ 401   1        if(P24 == 0)
+ 402   1        {
+ 403   2          delay(190);
+ 404   2          level_state++;
+ 405   2          if(level_state>1)level_state=0;
+ 406   2          draw_level_choice();
+ 407   2        }
+ 408   1        else if(P25 == 0)
+ 409   1        {
+ 410   2          if(level_state == 0)
+ 411   2          {
+ 412   3            for(i=0;i<8;i++)
+ 413   3            {
+ 414   4              for(j=0;j<8;j++)
+ 415   4              {
+ 416   5                map[i][j] = map1[i][j];
+ 417   5              }
+ 418   4            
+ 419   4            }
+ 420   3            LCD_Text_Mode_Clear();
+ 421   3            LCD_String(1,1,"Easy Mode");
+ 422   3            delay(1000);
+ 423   3            now_state = MENU;
+ 424   3            LCD_Text_Mode_Clear();
+ 425   3            draw_menu();
+ 426   3          }
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 8   
+
+ 427   2          else if(level_state == 1)
+ 428   2          {
+ 429   3            for(i=0;i<8;i++)
+ 430   3            {
+ 431   4              for(j=0;j<8;j++)
+ 432   4              {
+ 433   5                map[i][j] = map2[i][j];
+ 434   5              }
+ 435   4            }
+ 436   3            LCD_Text_Mode_Clear();
+ 437   3            LCD_String(1,1,"Challenge");
+ 438   3            delay(1000);
+ 439   3            now_state = MENU;
+ 440   3            LCD_Text_Mode_Clear();
+ 441   3            draw_menu();
+ 442   3          }
+ 443   2        }
+ 444   1        
+ 445   1      }
+ 446          
+ 447          void check_level_state()
+ 448          {
+ 449   1        unsigned char i,j;
+ 450   1        if(level_state == 0)
+ 451   1        {
+ 452   2          for(i=0;i<8;i++)
+ 453   2          {
+ 454   3            for(j=0;j<8;j++)
+ 455   3            {
+ 456   4              map[i][j] = map1[i][j];
+ 457   4            }
+ 458   3          }
+ 459   2        }
+ 460   1        else if(level_state == 1)
+ 461   1        {
+ 462   2          for(i=0;i<8;i++)
+ 463   2          {
+ 464   3            for(j=0;j<8;j++)
+ 465   3            {
+ 466   4              map[i][j] = map2[i][j];
+ 467   4            }
+ 468   3          }
+ 469   2        }
+ 470   1      }
+ 471          
+ 472          void read_store_test(void)
+ 473          {
+ 474   1        px = AT24C02_ReadByte(1);
+ 475   1      //  AT24C02_ReadByte(3);
+ 476   1        py = AT24C02_ReadByte(5);
+ 477   1      //  AT24C02_ReadByte(7);
+ 478   1        dir = AT24C02_ReadByte(9);
+ 479   1      //  AT24C02_ReadByte(11);
+ 480   1        level_state = AT24C02_ReadByte(13);
+ 481   1      
+ 482   1      }
+ 483          
+ 484          void read_write_test(void)
+ 485          {
+ 486   1        AT24C02_WriteByte(1,2);
+ 487   1      //  AT24C02_WriteByte(3,2);
+ 488   1        AT24C02_WriteByte(5,2);
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 9   
+
+ 489   1      //  AT24C02_WriteByte(7,1);
+ 490   1        AT24C02_WriteByte(9,1);
+ 491   1        
+ 492   1        AT24C02_WriteByte(13,1);
+ 493   1      }
+ 494          
+ 495          void init_map(void)
+ 496          {
+ 497   1        unsigned char i,j;
+ 498   1            for(i=0;i<8;i++)
+ 499   1            {
+ 500   2              for(j=0;j<8;j++)
+ 501   2              {
+ 502   3                map[i][j] = map2[i][j];
+ 503   3              }
+ 504   2            }
+ 505   1      }
+ 506          
+ 507          
+ 508          
+ 509          
+ 510          
+ 511          void debug_print_map(void)
+ 512          {
+ 513   1          unsigned char i, j;
+ 514   1          LCD_Enter_Text_Mode();
+ 515   1          LCD_Text_Mode_Clear();
+ 516   1          
+ 517   1          for(i=0; i<8; i++)
+ 518   1          {
+ 519   2              for(j=0; j<8; j++)
+ 520   2              {
+ 521   3                  if(map[i][j] == 0)
+ 522   3                      LCD_String(1, 1, "A"); // ??????
+ 523   3                  else if(map[i][j] == 1)
+ 524   3                      LCD_String(j, i, "#"); // ??? #
+ 525   3                  else if(map[i][j] == 2)
+ 526   3                      LCD_String(j, i, "O"); // ???? O
+ 527   3              }
+ 528   2          }
+ 529   1          
+ 530   1          // ???????
+ 531   1          while(P33 == 1); 
+ 532   1      }
+ 533          
+ 534          void main(void)
+ 535          {
+ 536   1        
+ 537   1      //  Timer_Init();
+ 538   1        
+ 539   1        LCD_Init();
+ 540   1      ////测试
+ 541   1      //  LCD_Enter_Text_Mode();
+ 542   1      //  
+ 543   1      //  LCD_String(1,1,"H");
+ 544   1      //  delay(1000);
+ 545   1      //  LCD_Text_Mode_Clear();
+ 546   1      //  LCD_Enter_GDRAM_Mode();
+ 547   1      //  testrender();
+ 548   1      //  
+ 549   1      //测试地图选择玄学问题地图赋值不正常
+ 550   1      //  LCD_String(1,1,"A");
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 10  
+
+ 551   1      //  map[0][0]= map2[6][6];
+ 552   1      //  delay(5);
+ 553   1      //  if(map[0][0] == 0x02)
+ 554   1      //  {
+ 555   1      //    delay(10);
+ 556   1      //    LCD_String(0,0,"A");
+ 557   1      //  }
+ 558   1      //  else if(map[0][0]!=0x02)
+ 559   1      //  {
+ 560   1      //    LCD_String(1,3,"C");
+ 561   1      //  }
+ 562   1      //  LCD_String(1,2,"B");
+ 563   1      
+ 564   1      //测试存储
+ 565   1      
+ 566   1      //  read_write_test();
+ 567   1      //  
+ 568   1      //  read_store_test();
+ 569   1      //  if(px == 2)
+ 570   1      //  {
+ 571   1      //    LCD_String(0,0,"px");
+ 572   1      //  }
+ 573   1      //  if(py == 2)
+ 574   1      //  {
+ 575   1      //    LCD_String(0,1,"py");
+ 576   1      //  }
+ 577   1      //  if(dir == 1)
+ 578   1      //  {
+ 579   1      //    LCD_String(0,2,"dir");
+ 580   1      //  }
+ 581   1      //  if(level_state == 1)
+ 582   1      //  {
+ 583   1      //    LCD_String(0,3,"level");
+ 584   1      //  }
+ 585   1      //  
+ 586   1      //  check_level_state();
+ 587   1        
+ 588   1      //  while(1);
+ 589   1        
+ 590   1        
+ 591   1        
+ 592   1      //  while(1);
+ 593   1        
+ 594   1      //======================================================================================
+ 595   1      //游戏逻辑
+ 596   1        init_map();
+ 597   1        draw_menu();
+ 598   1      
+ 599   1        
+ 600   1        
+ 601   1        while(1)
+ 602   1        {
+ 603   2      
+ 604   2          if(now_state == MENU)
+ 605   2          {
+ 606   3            test_draw_menu();       //这里包含了对应的按键检测
+ 607   3          }
+ 608   2          else if(now_state == LEVEL_CHOICE)
+ 609   2          {
+ 610   3            testLevelChoice();
+ 611   3          }
+ 612   2          else if(now_state == GAME)
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 11  
+
+ 613   2          {
+ 614   3            
+ 615   3            testGameKey();
+ 616   3            
+ 617   3            rendertest2(map);
+ 618   3            judge_if_success();
+ 619   3            
+ 620   3          }
+ 621   2          
+ 622   2          
+ 623   2        }
+ 624   1        
+ 625   1      
+ 626   1        //====================================================================================
+ 627   1        
+ 628   1        
+ 629   1        
+ 630   1        
+ 631   1        
+ 632   1        
+ 633   1        
+ 634   1        
+ 635   1        
+ 636   1        
+ 637   1        
+ 638   1      //  
+ 639   1      //  LCD_Write_Cmd(0x01);
+ 640   1      //  delay(5);
+ 641   1      
+ 642   1      
+ 643   1      //  //测试
+ 644   1      //  draw_menu();
+ 645   1      //  while(1)  
+ 646   1      //  {
+ 647   1      //    if(now_state != last_state)
+ 648   1      //    {
+ 649   1      //      last_state = now_state;
+ 650   1      //      key_clear_all_flags();
+ 651   1      //      if(now_state ==  MENU)
+ 652   1      //      {
+ 653   1      //        LCD_Enter_Text_Mode();
+ 654   1      //      }
+ 655   1      //      else if(now_state == GAME)
+ 656   1      //      {
+ 657   1      //        LCD_Enter_GDRAM_Mode();
+ 658   1      //      }
+ 659   1      //      
+ 660   1      //      LCD_Clear_When_Switch_Mode();
+ 661   1      //      
+ 662   1      //    }
+ 663   1      //    
+ 664   1      //    if(now_state == MENU)
+ 665   1      //    {
+ 666   1      //      menu_key_state = get_MenuKey_state();
+ 667   1      //      menuKey();
+ 668   1      //    }
+ 669   1      //    else if(now_state == GAME)
+ 670   1      //    {
+ 671   1      //      game_key_state = get_gameKey_state();
+ 672   1      //      key_game();
+ 673   1      //    }
+ 674   1      //  }
+C51 COMPILER V9.55   MAIN                                                                  04/16/2026 16:54:56 PAGE 12  
+
+ 675   1      //  
+ 676   1      //  while(1);
+ 677   1      }
+ 678          
+ 679          
+ 680          //void Timer0_ISR() interrupt 1
+ 681          //{
+ 682          //  TH0 = 0xDC;
+ 683          //  TL0 = 0x18;
+ 684          
+ 685          //}
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1353    ----
+   CONSTANT SIZE    =    145    ----
+   XDATA SIZE       =    192    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     27       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      6    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

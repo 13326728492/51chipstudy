@@ -1,0 +1,350 @@
+C51 COMPILER V9.55   LCD12864                                                              04/16/2026 16:54:56 PAGE 1   
+
+
+C51 COMPILER V9.55, COMPILATION OF MODULE LCD12864
+OBJECT MODULE PLACED IN .\Objects\LCD12864.obj
+COMPILER INVOKED BY: E:\keil\keil_v5\C51\BIN\C51.EXE E:\LCD12864.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\L
+                    -istings\LCD12864.lst) TABS(2) OBJECT(.\Objects\LCD12864.obj)
+
+line level    source
+
+   1          #include <intrins.h>
+   2          #include "Delay.h"
+   3          #include <reg52.h>
+   4          #define LCD_DATAPORT P1
+   5          
+   6          
+   7          sbit LCD_RS = P3^0;
+   8          sbit LCD_EN = P3^2;
+   9          sbit LCD_RW = P3^1;
+  10          
+  11          //模式选择只针对START模式有效
+  12          //如果是continue则是选择上一个地图
+  13          
+  14          
+  15          
+  16          volatile unsigned char keil_not_optimize_me;
+  17          
+  18          //unsigned char checkbusy(){
+  19          //  unsigned char  temp;
+  20          //  LCD_DATAPORT = 0xFF;
+  21          //  LCD_RS =0;
+  22          //  LCD_RW = 1;
+  23          //  LCD_EN = 1;
+  24          //  delay(1);
+  25          //  temp = LCD_DATAPORT;
+  26          //  LCD_EN = 0;
+  27          //  return temp&0x80;
+  28          //}
+  29          
+  30          
+  31          void LCD_Write_Cmd(unsigned char cmd)
+  32          {
+  33   1      //  while(checkbusy())
+  34   1        LCD_RS = 0;
+  35   1        LCD_RW = 0;
+  36   1        LCD_EN = 0;
+  37   1        
+  38   1        LCD_DATAPORT = cmd;
+  39   1        LCD_EN = 1;
+  40   1      
+  41   1        LCD_EN = 0;
+  42   1      
+  43   1      
+  44   1      }
+  45          
+  46          
+  47          void LCD_Write_Data(unsigned char dat)
+  48          {
+  49   1      //  while(checkbusy());
+  50   1        LCD_RS = 1;
+  51   1        LCD_RW = 0;
+  52   1        LCD_EN = 0;
+  53   1        
+  54   1        LCD_DATAPORT = dat;
+C51 COMPILER V9.55   LCD12864                                                              04/16/2026 16:54:56 PAGE 2   
+
+  55   1        
+  56   1        LCD_EN = 1;
+  57   1      
+  58   1        LCD_EN = 0;
+  59   1      
+  60   1        
+  61   1      }
+  62          unsigned char LCD_Read_Data(void)
+  63          {
+  64   1        unsigned char Data = 0;
+  65   1        LCD_DATAPORT = 0xFF;
+  66   1        LCD_RS = 1;
+  67   1        LCD_RW = 1;
+  68   1        LCD_EN = 1;
+  69   1        
+  70   1        Data = LCD_DATAPORT;
+  71   1      
+  72   1        LCD_EN = 0;
+  73   1        
+  74   1        return Data;
+  75   1      }
+  76          
+  77          void LCD_Init()
+  78          {
+  79   1        delay(100);
+  80   1        
+  81   1        LCD_Write_Cmd(0x30);
+  82   1        delay(10);
+  83   1        
+  84   1        LCD_Write_Cmd(0x30);
+  85   1        delay(10);
+  86   1        
+  87   1        LCD_Write_Cmd(0x30);
+  88   1        delay(10);
+  89   1        LCD_Write_Cmd(0x30);  // ? ??:4??????
+  90   1          delay(10);
+  91   1        
+  92   1        
+  93   1        LCD_Write_Cmd(0x0c);
+  94   1        delay(10);
+  95   1        
+  96   1        LCD_Write_Cmd(0x01);
+  97   1        delay(10);
+  98   1        LCD_Write_Cmd(0x06);
+  99   1        delay(10);
+ 100   1        
+ 101   1      
+ 102   1      }
+ 103          
+ 104          void LCD_Enter_GDRAM_Mode()
+ 105          {
+ 106   1        LCD_Write_Cmd(0x34);
+ 107   1        delay(1);
+ 108   1        LCD_Write_Cmd(0x36);
+ 109   1        delay(1);
+ 110   1        
+ 111   1      }
+ 112          
+ 113          
+ 114          void LCD_Enter_Text_Mode()
+ 115          {
+ 116   1        LCD_Write_Cmd(0x30);
+C51 COMPILER V9.55   LCD12864                                                              04/16/2026 16:54:56 PAGE 3   
+
+ 117   1        delay(1);
+ 118   1        LCD_Write_Cmd(0x0c);
+ 119   1      }
+ 120          
+ 121          
+ 122          
+ 123          
+ 124          void LCD_Text_Mode_Clear(void)
+ 125          {
+ 126   1        
+ 127   1          
+ 128   1      
+ 129   1        LCD_Write_Cmd(0x01);
+ 130   1      
+ 131   1        delay(10);
+ 132   1          LCD_Write_Cmd(0x80);
+ 133   1        delay(10);
+ 134   1            
+ 135   1      }
+ 136          
+ 137          //void LCD_GDRAM_Mode_Clear(unsigned char* buf)
+ 138          //{
+ 139          //  unsigned char i;
+ 140          //  for(i=0;i<1024;i++)
+ 141          //  {
+ 142          //    buf[i]= 0x00;
+ 143          //  }
+ 144          //  { unsigned char dummy = 0; }
+ 145          //}
+ 146          
+ 147          
+ 148          
+ 149          
+ 150          
+ 151          
+ 152          
+ 153          void LCD_DrawPixel(unsigned char x,unsigned char y)
+ 154          {
+ 155   1        
+ 156   1        unsigned char H,L;
+ 157   1        unsigned char pos;
+ 158   1      
+ 159   1        
+ 160   1        pos = 15 - (x%16);
+ 161   1      
+ 162   1        if(y<32)
+ 163   1        {
+ 164   2          LCD_Write_Cmd(0x80+y);
+ 165   2          _nop_();
+ 166   2          LCD_Write_Cmd(0x80+(x/16));
+ 167   2          _nop_();_nop_();
+ 168   2          LCD_Read_Data();
+ 169   2          H = LCD_Read_Data();
+ 170   2          L = LCD_Read_Data();
+ 171   2          if(pos >= 8)
+ 172   2          {
+ 173   3            H |= 1 << (pos-8);
+ 174   3          }
+ 175   2          else
+ 176   2          {
+ 177   3            L |= 1 << pos;
+ 178   3          }
+C51 COMPILER V9.55   LCD12864                                                              04/16/2026 16:54:56 PAGE 4   
+
+ 179   2          
+ 180   2          LCD_Write_Cmd(0x80+y);
+ 181   2          _nop_();
+ 182   2          LCD_Write_Cmd(0x80+(x/16));
+ 183   2          _nop_();
+ 184   2          LCD_Read_Data();
+ 185   2          LCD_Write_Data(H);
+ 186   2          LCD_Write_Data(L);
+ 187   2          _nop_();
+ 188   2        }
+ 189   1        else if(y>=32)
+ 190   1        {
+ 191   2          LCD_Write_Cmd(0x80+y-32);
+ 192   2          _nop_();
+ 193   2          LCD_Write_Cmd(0x88+(x/16));
+ 194   2          _nop_();
+ 195   2          LCD_Read_Data();
+ 196   2          H = LCD_Read_Data();
+ 197   2          L = LCD_Read_Data();
+ 198   2          
+ 199   2          if(pos >= 8)
+ 200   2          {
+ 201   3            H |= 1 << (pos -8);
+ 202   3          }
+ 203   2          else
+ 204   2          {
+ 205   3            L |= 1 << pos;
+ 206   3          }
+ 207   2          
+ 208   2          LCD_Write_Cmd(0x80+y-32);
+ 209   2          _nop_();
+ 210   2          LCD_Write_Cmd(0x88+(x/16));
+ 211   2          _nop_();
+ 212   2          LCD_Write_Data(H);
+ 213   2        
+ 214   2          LCD_Write_Data(L);
+ 215   2          _nop_();
+ 216   2          
+ 217   2        }
+ 218   1      }
+ 219          
+ 220          
+ 221          void LCD_Draw_Vertical_Line(unsigned char x, unsigned char y1,unsigned char y2){
+ 222   1        unsigned char y;
+ 223   1          
+ 224   1        if(y1>y2)
+ 225   1        {
+ 226   2          unsigned char temp = y1;
+ 227   2          y1 = y2;
+ 228   2          y2 = temp;
+ 229   2        }
+ 230   1      
+ 231   1      
+ 232   1        
+ 233   1        for(y = y1; y < ((y2+y1)/2) ; y++)
+ 234   1        {
+ 235   2          LCD_DrawPixel(x,y);
+ 236   2        }
+ 237   1        for(y= ((y2+y1)/2+1); y<=y2;y++)
+ 238   1        {
+ 239   2          LCD_DrawPixel(x,y);
+ 240   2        }
+C51 COMPILER V9.55   LCD12864                                                              04/16/2026 16:54:56 PAGE 5   
+
+ 241   1      }
+ 242          
+ 243          void LCD_GDRAM_MODE_CLEAR()
+ 244          {
+ 245   1        unsigned char x,y;
+ 246   1        
+ 247   1        for(y=0;y<32;y++)
+ 248   1        {
+ 249   2          LCD_Write_Cmd(0x80 + y);
+ 250   2          LCD_Write_Cmd(0x80);
+ 251   2          for(x=0;x<16;x++)
+ 252   2          {
+ 253   3            LCD_Write_Data(0x00);
+ 254   3            LCD_Write_Data(0x00);
+ 255   3          }
+ 256   2        }
+ 257   1        
+ 258   1        for(y=0;y<32;y++)
+ 259   1        {
+ 260   2          LCD_Write_Cmd(0x80+y);
+ 261   2          LCD_Write_Cmd(0x88);
+ 262   2          for(x=0;x<16;x++)
+ 263   2          {
+ 264   3            LCD_Write_Data(0x00);
+ 265   3            LCD_Write_Data(0x00);
+ 266   3          }
+ 267   2        }
+ 268   1      }
+ 269          
+ 270          //???????????????????
+ 271          //void LCD_render_to_screen(unsigned char* buf)
+ 272          //{
+ 273          //  unsigned char i,j;
+ 274          //  for(i=0;i<32;i++)
+ 275          //  {
+ 276          //    LCD_Write_Cmd(0x80+i);
+ 277          //    LCD_Write_Cmd(0x80);
+ 278          //    for(j=0;j<16;j++)
+ 279          //    {
+ 280          //      LCD_Write_Data(*buf++);
+ 281          //    }
+ 282          //  }
+ 283          //  for(i=0;i<32;i++)
+ 284          //  {
+ 285          //    LCD_Write_Cmd(0x80+i);
+ 286          //    LCD_Write_Cmd(0x88);
+ 287          //    for(j=0;j<16;j++)
+ 288          //    {
+ 289          //      LCD_Write_Data(*buf++);
+ 290          //    }
+ 291          //  }
+ 292          //}
+ 293          
+ 294          void LCD_String(unsigned char x,unsigned char y,const char* str)
+ 295          {
+ 296   1        unsigned char i = 0;
+ 297   1        unsigned char addr;
+ 298   1        if(y == 0)
+ 299   1        {addr = 0x80;}
+ 300   1        if(y == 1)
+ 301   1        {addr =0x90;}
+ 302   1        if(y ==2)
+C51 COMPILER V9.55   LCD12864                                                              04/16/2026 16:54:56 PAGE 6   
+
+ 303   1        {addr = 0x88;}
+ 304   1        if(y == 3)
+ 305   1        {addr = 0x98;}
+ 306   1        addr = addr+x;
+ 307   1        LCD_Write_Cmd(addr);
+ 308   1        delay(2);
+ 309   1        while(str[i] != '\0')
+ 310   1        {
+ 311   2          
+ 312   2          LCD_Write_Data(str[i]);
+ 313   2          delay(2);
+ 314   2          i++;
+ 315   2        } 
+ 316   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    630    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
